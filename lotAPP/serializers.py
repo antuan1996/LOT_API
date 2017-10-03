@@ -1,64 +1,62 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from lotAPP.models import Lot, Bet
 from django.contrib.auth.models import User
+from lotAPP.models import Lot, Bet
+from django.utils import timezone
+from rest_framework.serializers import ValidationError
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, allow_blank=False, style={'input_type':'password'})
+    password = serializers.CharField(write_only=True, allow_blank=False, style={'input_type': 'password'})
     email = serializers.EmailField(allow_blank=False)
 
-    def create(self, validated_data):
-        user = get_user_model().objects.create(
-            username = validated_data['username'],
-            email = validated_data['email']
-        )
-
-        user.set_password(validated_data['password'])
-
-
-        user.save()
-
-        return user
-
-
     class Meta():
-        model = get_user_model()
+        model = User
         fields = ('username', 'password', 'email')
 
 
 class LotSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(read_only=True, slug_field='username')
+    status = serializers.BooleanField(read_only=True)
 
-    def create(self, validated_data):
-
-        lot = Lot.objects.create(
-            lot_name = validated_data['lot_name'],
-            lot_price = validated_data['lot_price'],
-            lot_price_step = validated_data['lot_price_step'],
-            lot_text = validated_data['lot_text'],
-            lot_author = User.objects.get(id=validated_data['lot_author'])
-        )
-
-        lot.save()
-
-        return lot
-
+    def validate_close_time(self, value):
+        print(value)
+        now = timezone.now()
+        print(now)
+        if value <= now:
+            raise ValidationError('Время не может быть в прошлом')
+        return value
 
     class Meta():
         model = Lot
-        fields = ('id','lot_name', 'lot_price', 'lot_price_step', 'lot_text', 'lot_status')
+        fields = ('author', 'id', 'name', 'price', 'price_step', 'text', 'status', 'close_time')
 
 
 class BetSerializer(serializers.ModelSerializer):
+    owner = serializers.SlugRelatedField(read_only=True, slug_field='username')
+
+    def validate(self, data):
+        lot = data['lot']
+        if lot.status == False:
+            raise ValidationError('Аукцион закрыт')
+        bet_user = self.context['request'].user
+        if bet_user == lot.author:
+            raise ValidationError('Вы не можете сделать ставку, так как являетесь создателем аукциона')
+        sum_bet = data['sum']
+        if sum_bet <= lot.price:
+            raise ValidationError('Сумма ставки меньше существующей цены')
+        if (sum_bet - lot.price) % lot.price_step != 0:
+            raise ValidationError('Сумма ставки не соответсвует параметрам ставки')
+        return data
 
     class Meta():
         model = Bet
-        fields = ('bet_on_lot', 'bet_sum', )
+        fields = ('lot', 'owner', 'sum',)
+
 
 class LotAndBetSerializer(serializers.ModelSerializer):
-
     bets = BetSerializer(many=True, read_only=True)
+    author = serializers.SlugRelatedField(read_only=True, slug_field='username')
 
     class Meta():
         model = Lot
-        fields = ('id','lot_name', 'lot_price', 'lot_price_step', 'lot_text', 'lot_status', 'bets', )
+        fields = ('id', 'name', 'author', 'price', 'price_step', 'text', 'status', 'bets',)

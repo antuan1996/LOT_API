@@ -37,14 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'lotAPP',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'django_filters'
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    )
+    'DEFAULT_FILTER_BACKENDS':
+    ('django_filters.rest_framework.DjangoFilterBackend', ),
+    'DEFAULT_AUTHENTICATION_CLASSES':
+    ('rest_framework.authentication.TokenAuthentication',
+     'rest_framework.authentication.SessionAuthentication', ),
+    'DEFAULT_PERMISSION_CLASSES':
+    ('rest_framework.permissions.IsAuthenticated', ),
 }
 
 MIDDLEWARE = [
@@ -105,12 +109,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
+REDIS_HOST = 'localhost'
+REDIS_PORT = '6379'
+BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
+CELERY_IGNORE_RESULT = True
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'Asia/Tomsk'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -122,7 +128,7 @@ STATIC_URL = '/static/'
 
 EMAIL_HOST = 'smtp.mail.ru'
 EMAIL_PORT = 2525
-EMAIL_HOST_USER = "wallstbrok@bk.ru"
-EMAIL_HOST_PASSWORD = "qode74tahnu"
+EMAIL_HOST_USER = "login"
+EMAIL_HOST_PASSWORD = "password"
 EMAIL_USE_TLS = True
 

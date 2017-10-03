@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api/v1', include('rest_framework.urls')),
     url(r'^', include('lotAPP.urls'))
 ]
