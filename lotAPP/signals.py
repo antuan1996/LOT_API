@@ -22,9 +22,9 @@ def mail_send_newLot(instance, created=False, **kwargs):
     if instance.status == True:
         lot_name = instance.name
         lot_price = instance.price
-        emails = set(User.objects.filter(bet__lot=15).values_list('email', flat=True))
+        emails = set(User.objects.filter(bet__lot=instance.id).values_list('email', flat=True))
         notify_new_bet.delay(list(emails), lot_name, lot_price)
 
     if instance.status == False:
-        emails = set(User.objects.filter(bet__lot=15).values_list('email', flat=True))
+        emails = set(User.objects.filter(bet__lot=instance.id).values_list('email', flat=True))
         notify_close_lot.delay(list(emails), instance.name, instance.winner.username)
