@@ -28,9 +28,11 @@ class BetOnLot(CreateAPIView):
     def perform_create(self, serializer):
         return serializer.save(owner=self.request.user)
 
+# PEP8
 class MyBets(ListAPIView):
     serializer_class = BetSerializer
 
     def get_queryset(self):
+        # redundant var "queryset"
         queryset = Bet.objects.filter(author=self.request.user.id)
         return queryset

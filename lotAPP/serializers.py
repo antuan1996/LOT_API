@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, allow_blank=False, style={'input_type': 'password'})
     email = serializers.EmailField(allow_blank=False)
 
-    class Meta():
+    class Meta():  # Why ()?
         model = User
         fields = ('username', 'password', 'email')
 
@@ -19,11 +19,11 @@ class LotSerializer(serializers.ModelSerializer):
     status = serializers.BooleanField(read_only=True)
 
     def validate_close_time(self, value):
-        print(value)
+        print(value)  # do not use print in project
         now = timezone.now()
         print(now)
         if value <= now:
-            raise ValidationError('Время не может быть в прошлом')
+            raise ValidationError('Время не может быть в прошлом') # Время закрытия
         return value
 
     class Meta():
@@ -36,10 +36,10 @@ class BetSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         lot = data['lot']
-        if lot.status == False:
+        if lot.status == False:  # if not lot.status
             raise ValidationError('Аукцион закрыт')
         bet_user = self.context['request'].user
-        if bet_user == lot.author:
+        if bet_user == lot.author:  # !!!!
             raise ValidationError('Вы не можете сделать ставку, так как являетесь создателем аукциона')
         sum_bet = data['sum']
         if sum_bet <= lot.price:

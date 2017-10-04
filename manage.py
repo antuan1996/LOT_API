@@ -2,6 +2,13 @@
 import os
 import sys
 
+
+# Where is .gitignore?
+# Where is requirements.txt?
+# Where is readme?
+# Where are migrations?
+# Do not add database in repository
+
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "LotAPI.settings")
     try:
